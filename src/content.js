@@ -96,6 +96,7 @@ chrome.storage.onChanged.addListener((changes) => {
       ensureChatIframeSrc() // iframe.srcが空になることがあるので呼ぶ
     } else {
       revertLayout()
+      ensureChatIframeSrc() // iframe.srcが空になることがあるので呼ぶ
     };
   }
 });

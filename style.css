@@ -1,11 +1,11 @@
-/* 動画プレイヤー */
+/* === 1. プレイヤー配置とサイズ === */
 #player {
   order: 1 !important;
   width: 100% !important;
   max-width: 100% !important;
 }
 
-/* ページ全体調整 */
+/* === 2. ページ全体の横幅リセット === */
 html, body, #container {
   width: 100% !important;
   max-width: 100% !important;
@@ -14,7 +14,7 @@ html, body, #container {
   overflow-x: hidden;
 }
 
-/* 動画ラッパー全体をページ幅に広げる */
+/* === 3. プレイヤー周辺要素の横幅統一 === */
 #player, #player-container, .html5-video-player, .ytp-player-content {
   width: 100% !important;
   max-width: 100% !important;
@@ -23,53 +23,35 @@ html, body, #container {
   margin: 0 auto !important;
 }
 
-/* video タグ本体も広げる */
+/* === 4. videoタグ本体のサイズ調整 === */
 video.video-stream.html5-main-video {
   width: 100% !important;
   height: auto !important;
+  object-fit: contain !important;
   left: 0 !important;
   top: 0 !important;
-  object-fit: contain !important;
   transform: none !important;
 }
 
-/* 必要に応じて中の注釈（ウォーターマークなど）も配置調整 */
+/* === 5. 注釈などの内部要素調整 === */
 .ytp-player-content .annotation {
   max-width: 100% !important;
   overflow: hidden;
 }
 
-.tooltip-button {
-  position: relative;
-}
-.tooltip-text {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  background: rgba(0,0,0,0.75);
-  color: #fff;
-  padding: 4px 8px;
-  border-radius: 4px;
-  display: none;
-}
-.tooltip-button:hover .tooltip-text {
-  display: block;
+/* === 6. プレイヤーのUI（再生バーなど）の幅調整 === */
+.ytp-chrome-bottom {
+  left: 0 !important;
+  width: 100% !important;
 }
 
+/* === 7. ツールチップ調整（必要なら） === */
 .ytp-tooltip.ytp-bottom {
   position: absolute !important;
-  bottom: 10px !important;        /* 動画下部からの距離を指定 */
+  bottom: 10px !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
   z-index: 9999 !important;
   max-width: 300px !important;
-  top: auto !important;           /* topは無効化 */
-}
-
-/* YouTubeが埋め込まれている場合に限定して調整 */
-.ytp-chrome-bottom {
-  left: 0px !important;
-  width: 100% !important;
+  top: auto !important;
 }
