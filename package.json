@@ -1,0 +1,15 @@
+{
+  "name": "youtube-chat-rearranger",
+  "version": "1.0.0",
+  "description": "",
+  "main": "chatHandler.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "esbuild": "^0.25.5"
+  },
+  "scripts": {
+    "build": "esbuild src/content.js --bundle --outfile=content.bundle.js --format=iife --minify"
+  }
+}
