@@ -58,3 +58,6 @@ npm run build
 1. chrome://extensions/ にアクセス
 2. 「デベロッパーモード」を ON
 3. 「パッケージ化されていない拡張機能を読み込む」からプロジェクトフォルダを選択
+
+## ライセンス
+This project is licensed under the [MIT License](./LICENSE).
