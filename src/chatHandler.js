@@ -9,7 +9,7 @@ import { isArchiveStream } from './streamStatus.js';
 export async function setupChatIframe() {
   const videoId = getVideoId();
   if (!videoId) {
-    console.warn('[ChatFix] Video ID not found');
+    console.warn('[YTChatRearranger] Video ID not found');
     return;
   }
 
@@ -18,7 +18,7 @@ export async function setupChatIframe() {
     const iframe = document.querySelector('iframe#chatframe');
     if (iframe && (!iframe.src || iframe.src.startsWith('about:blank'))) {
       iframe.src = await getChatSrcWithWait(videoId);
-      console.log('[ChatFix] アーカイブチャットの src を設定:', iframe.src);
+      // console.log('[YTChatRearranger] アーカイブチャットの src を設定:', iframe.src);
     }
   } else {
     await waitForElement('ytd-live-chat-frame iframe#chatframe');
@@ -27,9 +27,9 @@ export async function setupChatIframe() {
       const chatSrc = getLiveChatSrc(videoId);
       if (iframe.src !== chatSrc) {
         iframe.src = chatSrc;
-        console.log('[ChatFix] ライブチャットの src を設定:', chatSrc);
+        // console.log('[YTChatRearranger] ライブチャットの src を設定:', chatSrc);
       } else {
-        console.log('[ChatFix] ライブチャットの src はすでに設定済み');
+        // console.log('[YTChatRearranger] ライブチャットの src はすでに設定済み');
       }
     }
   }
@@ -58,7 +58,7 @@ async function getChatSrcWithWait(videoId) {
     // continuation が取れなければ fallback
     return `https://www.youtube.com/live_chat_replay?v=${videoId}&embed_domain=${location.hostname}`;
   } catch (e) {
-    console.warn('[ChatFix] ytInitialData 取得失敗:', e);
+    console.warn('[YTChatRearranger] ytInitialData 取得失敗:', e);
     return `https://www.youtube.com/live_chat_replay?v=${videoId}&embed_domain=${location.hostname}`;
   }
 }
@@ -77,11 +77,11 @@ async function extractYtInitialDataFromScripts() {
           .split('};')[0] + '}';
         return JSON.parse(jsonText);
       } catch (e) {
-        console.warn('[ChatFix] ytInitialData パース失敗', e);
+        console.warn('[YTChatRearranger] ytInitialData パース失敗', e);
       }
     }
   }
-  throw new Error('[ChatFix] ytInitialData not found in scripts');
+  throw new Error('[YTChatRearranger] ytInitialData not found in scripts');
 }
 
 /**

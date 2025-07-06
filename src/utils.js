@@ -30,6 +30,6 @@ export function waitForElement(selector, timeout = 5000) {
 
     check();
   }).catch((error) => {
-    console.warn(`[waitForElement] ${error}`);
+    console.warn(`[YTChatRearranger] ${error}`);
   });
 }

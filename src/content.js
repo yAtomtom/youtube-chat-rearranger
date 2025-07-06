@@ -5,19 +5,32 @@ import { fixVideoSize } from './videoAdjustments.js';
 import { getChatSrcWithWait, getLiveChatSrc, getVideoId } from './chatHandler.js';
 import { isArchiveStream } from './streamStatus.js';
 
+let initializedUrl = null;
+
 // 初期化
 initializeLayout();
 observeLayoutChanges();
 
+// ページ遷移にも対応
+onPageChange(() => {
+  // console.log('[YTChatRearranger] Page changed');
+  initializeLayout();
+});
+
 /**
- * レイアウト初期化処理
- * 設定値を取得し、チャット iframe の src を設定後、レイアウトを適用または復元する。
+ * YouTube の動画ページが開かれたときに初期化処理を実行する。
+ * - チャット iframe の修正
+ * - レイアウトの適用または復元
  */
 function initializeLayout() {
+  const currentUrl = location.href;
+  if (initializedUrl === currentUrl) return;
+  initializedUrl = currentUrl;
+
   chrome.storage.local.get('enabled', async (data) => {
     const isEnabled = data.enabled ?? true;
+    await ensureChatIframeSrc();
     if (isEnabled) {
-      await ensureChatIframeSrc();
       waitForElements(() => {
         applyCustomLayout();
         fixVideoSize();
@@ -28,19 +41,53 @@ function initializeLayout() {
   });
 }
 
+function onPageChange(callback) {
+  let lastUrl = location.href;
+
+  const observer = new MutationObserver(() => {
+    if (location.href !== lastUrl) {
+      lastUrl = location.href;
+      callback();
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  const originalPush = history.pushState;
+  const originalReplace = history.replaceState;
+
+  history.pushState = function (...args) {
+    originalPush.apply(this, args);
+    window.dispatchEvent(new Event('yt-navigate'));
+  };
+  history.replaceState = function (...args) {
+    originalReplace.apply(this, args);
+    window.dispatchEvent(new Event('yt-navigate'));
+  };
+
+  window.addEventListener('popstate', () => {
+    window.dispatchEvent(new Event('yt-navigate'));
+  });
+
+  window.addEventListener('yt-navigate', () => {
+    if (location.href !== lastUrl) {
+      lastUrl = location.href;
+      callback();
+    }
+  });
+}
+
 /**
  * 配信タイプに応じてチャット iframe の src を適切に設定する
  */
 async function ensureChatIframeSrc() {
   const videoId = getVideoId();
-  if (!videoId) return console.warn('[ChatFix] videoId 不明');
+  if (!videoId) return console.log('[YTChatRearranger] videoId 不明');
 
   if (isArchiveStream()) {
     await waitForElement('iframe#chatframe');
     const iframe = document.querySelector('iframe#chatframe');
     if (iframe && (!iframe.src || iframe.src.startsWith('about:blank')))
       iframe.src = await getChatSrcWithWait(videoId);
-      console.log(`iframe.src: ${iframe.src}`)
   } else {
     await waitForElement('ytd-live-chat-frame iframe#chatframe');
     const iframe = document.querySelector('ytd-live-chat-frame iframe#chatframe');
@@ -91,7 +138,6 @@ chrome.storage.onChanged.addListener((changes) => {
   if (changes.enabled) {
     const isEnabled = changes.enabled.newValue;
     if (isEnabled) {
-      console.log(`start layout`)
       waitForElements(applyCustomLayout) 
       ensureChatIframeSrc() // iframe.srcが空になることがあるので呼ぶ
     } else {
