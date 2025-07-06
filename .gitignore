@@ -1,0 +1,14 @@
+# .gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node / npm
+node_modules/
+dist/
+build/
+
+# Chrome 拡張キャッシュ（念のため）
+*.crx
+*.pem
