@@ -4,7 +4,7 @@
  * 現在のURLから YouTubeのvideoId を取得する
  * @returns {string|null}
  */
-export function getVideoId() {
+function getVideoId() {
   const url = new URL(window.location.href);
   return url.searchParams.get('v') || window.location.pathname.split('/').pop();
 }
@@ -15,7 +15,7 @@ export function getVideoId() {
  * @param {number} timeout - タイムアウト（ミリ秒）
  * @returns {Promise<Element>}
  */
-export function waitForElement(selector, timeout = 5000) {
+function waitForElement(selector, timeout = 5000) {
   return new Promise((resolve, reject) => {
     const interval = 100;
     let elapsed = 0;
@@ -33,3 +33,5 @@ export function waitForElement(selector, timeout = 5000) {
     console.warn(`[YTChatRearranger] ${error}`);
   });
 }
+
+export { getVideoId, waitForElement };

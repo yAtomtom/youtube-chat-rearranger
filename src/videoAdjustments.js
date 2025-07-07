@@ -3,7 +3,7 @@
 /**
  * プレイヤーやビデオ要素のサイズをウィンドウ幅に合わせて調整する
  */
-export function fixVideoSize() {
+function fixVideoSize() {
   const video = document.querySelector('video.video-stream.html5-main-video');
   const container = document.querySelector('.html5-video-player');
   const videoContainer = document.querySelector('.html5-video-container');
@@ -18,6 +18,9 @@ export function fixVideoSize() {
       width: '100%',
       height: '100%',
       objectFit: 'contain',
+      left: '0',
+      top: '0',
+      transform: 'none',
     });
   }
 
@@ -74,3 +77,5 @@ function fixChromeBottom() {
     }
   });
 }
+
+export { fixVideoSize };

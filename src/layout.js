@@ -3,7 +3,7 @@
 /**
  * YouTubeのプレイヤー下に #below と #secondary を横並びで配置するカスタムレイアウトを適用する
  */
-export function applyCustomLayout() {
+function applyCustomLayout() {
   const player = document.getElementById('player');
   const below = document.getElementById('below');
   const secondary = document.getElementById('secondary');
@@ -43,7 +43,7 @@ export function applyCustomLayout() {
 /**
  * 元の縦並びレイアウトに戻す
  */
-export function revertLayout() {
+function revertLayout() {
   const layout = document.getElementById('layout-below');
   const player = document.getElementById('player');
   const below = document.getElementById('below');
@@ -72,3 +72,5 @@ export function revertLayout() {
     }
   });
 }
+
+export { applyCustomLayout, revertLayout };
