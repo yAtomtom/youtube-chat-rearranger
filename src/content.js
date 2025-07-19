@@ -2,7 +2,7 @@
 
 import { applyCustomLayout, revertLayout } from './layout.js';
 import { fixVideoSize } from './videoAdjustments.js';
-import { getChatSrcWithWait, getLiveChatSrc, getVideoId } from './chatHandler.js';
+import { getChatSrcWithWait, getLiveChatSrc } from './chatHandler.js';
 import { isArchiveStream } from './streamStatus.js';
 import { getVideoId } from './utils.js';
 

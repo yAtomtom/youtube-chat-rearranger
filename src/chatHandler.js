@@ -103,6 +103,5 @@ export {
   getLiveChatSrc,
   findContinuation,
   extractYtInitialDataFromScripts,
-  getVideoId,
   waitForElement,
 };
