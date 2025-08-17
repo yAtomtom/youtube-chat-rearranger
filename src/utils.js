@@ -15,7 +15,7 @@ function getVideoId() {
  * @param {number} timeout - タイムアウト（ミリ秒）
  * @returns {Promise<Element>}
  */
-function waitForElement(selector, timeout = 5000) {
+function waitForElementToAppear(selector, timeout = 5000) {
   return new Promise((resolve, reject) => {
     const interval = 100;
     let elapsed = 0;
@@ -34,4 +34,39 @@ function waitForElement(selector, timeout = 5000) {
   });
 }
 
-export { getVideoId, waitForElement };
+function onPageChange(callback) {
+  let lastUrl = location.href;
+
+  const observer = new MutationObserver(() => {
+    if (location.href !== lastUrl) {
+      lastUrl = location.href;
+      callback();
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  const originalPush = history.pushState;
+  const originalReplace = history.replaceState;
+
+  history.pushState = function (...args) {
+    originalPush.apply(this, args);
+    window.dispatchEvent(new Event('yt-navigate'));
+  };
+  history.replaceState = function (...args) {
+    originalReplace.apply(this, args);
+    window.dispatchEvent(new Event('yt-navigate'));
+  };
+
+  window.addEventListener('popstate', () => {
+    window.dispatchEvent(new Event('yt-navigate'));
+  });
+
+  window.addEventListener('yt-navigate', () => {
+    if (location.href !== lastUrl) {
+      lastUrl = location.href;
+      callback();
+    }
+  });
+}
+
+export { getVideoId, waitForElementToAppear, onPageChange };

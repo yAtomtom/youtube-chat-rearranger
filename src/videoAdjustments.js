@@ -78,4 +78,44 @@ function fixChromeBottom() {
   });
 }
 
-export { fixVideoSize };
+/**
+ * DOM変化に応じて video サイズを自動再調整
+ */
+function observeLayoutChanges() {
+  const observer = new MutationObserver(() => fixVideoSize());
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
+function forceFullSizeLayout() {
+  syncStoryboardSize();
+}
+
+function syncStoryboardSize() {
+  const player = document.querySelector('div.style-scope.ytd-player');
+  const preview = document.querySelector('.ytp-storyboard-framepreview');
+  const previewImg = document.querySelector('.ytp-storyboard-framepreview-img');
+  if (!player || !preview || !previewImg) return;
+
+  const playerWidth = player.clientWidth;
+  const playerHeight = player.clientHeight;
+
+  // preview はプレイヤーサイズにする
+  preview.style.width = `${playerWidth}px`;
+  preview.style.height = `${playerHeight}px`;
+
+  // previewImg は元の1コマサイズのまま
+  const originalWidth = previewImg.clientWidth;
+  const originalHeight = previewImg.clientHeight;
+
+  // 拡大率計算
+  const scaleX = playerWidth / originalWidth;
+  const scaleY = playerHeight / originalHeight;
+
+  // transform で拡大縮小。background-position はそのまま
+  previewImg.style.width = `${originalWidth}px`;
+  previewImg.style.height = `${originalHeight}px`;
+  previewImg.style.transformOrigin = 'top left';
+  previewImg.style.transform = `scale(${scaleX}, ${scaleY})`;
+}
+
+export { fixVideoSize, observeLayoutChanges, forceFullSizeLayout };

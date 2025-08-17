@@ -1,6 +1,6 @@
 // chatHandler.js
 
-import { getVideoId, waitForElement } from './utils.js';
+import { getVideoId, waitForElementToAppear } from './utils.js';
 import { isArchiveStream } from './streamStatus.js';
 
 /**
@@ -14,14 +14,14 @@ export async function setupChatIframe() {
   }
 
   if (isArchiveStream()) {
-    await waitForElement('iframe#chatframe');
+    await waitForElementToAppear('iframe#chatframe');
     const iframe = document.querySelector('iframe#chatframe');
     if (iframe && (!iframe.src || iframe.src.startsWith('about:blank'))) {
       iframe.src = await getChatSrcWithWait(videoId);
       // console.log('[YTChatRearranger] アーカイブチャットの src を設定:', iframe.src);
     }
   } else {
-    await waitForElement('ytd-live-chat-frame iframe#chatframe');
+    await waitForElementToAppear('ytd-live-chat-frame iframe#chatframe');
     const iframe = document.querySelector('ytd-live-chat-frame iframe#chatframe');
     if (iframe) {
       const chatSrc = getLiveChatSrc(videoId);
@@ -102,6 +102,5 @@ export {
   getChatSrcWithWait,
   getLiveChatSrc,
   findContinuation,
-  extractYtInitialDataFromScripts,
-  waitForElement,
+  extractYtInitialDataFromScripts
 };

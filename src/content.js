@@ -1,16 +1,17 @@
 // content.js (リファクタリング版)
 
 import { applyCustomLayout, revertLayout } from './layout.js';
-import { fixVideoSize } from './videoAdjustments.js';
+import { fixVideoSize, forceFullSizeLayout, observeLayoutChanges } from './videoAdjustments.js';
 import { getChatSrcWithWait, getLiveChatSrc } from './chatHandler.js';
 import { isArchiveStream } from './streamStatus.js';
-import { getVideoId } from './utils.js';
+import { getVideoId, onPageChange, waitForElementToAppear } from './utils.js';
 
 let initializedUrl = null;
 
 // 初期化
 initializeLayout();
 observeLayoutChanges();
+setupPlayerObserver();
 
 // ページ遷移にも対応
 onPageChange(() => {
@@ -42,55 +43,20 @@ function initializeLayout() {
   });
 }
 
-function onPageChange(callback) {
-  let lastUrl = location.href;
-
-  const observer = new MutationObserver(() => {
-    if (location.href !== lastUrl) {
-      lastUrl = location.href;
-      callback();
-    }
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  const originalPush = history.pushState;
-  const originalReplace = history.replaceState;
-
-  history.pushState = function (...args) {
-    originalPush.apply(this, args);
-    window.dispatchEvent(new Event('yt-navigate'));
-  };
-  history.replaceState = function (...args) {
-    originalReplace.apply(this, args);
-    window.dispatchEvent(new Event('yt-navigate'));
-  };
-
-  window.addEventListener('popstate', () => {
-    window.dispatchEvent(new Event('yt-navigate'));
-  });
-
-  window.addEventListener('yt-navigate', () => {
-    if (location.href !== lastUrl) {
-      lastUrl = location.href;
-      callback();
-    }
-  });
-}
-
 /**
  * 配信タイプに応じてチャット iframe の src を適切に設定する
  */
 async function ensureChatIframeSrc() {
   const videoId = getVideoId();
-  if (!videoId) return console.log('[YTChatRearranger] videoId 不明');
+  if (!videoId) return console.log('[YTChatRearranger] unknown videoId');
 
   if (isArchiveStream()) {
-    await waitForElement('iframe#chatframe');
+    await waitForElementToAppear('iframe#chatframe');
     const iframe = document.querySelector('iframe#chatframe');
     if (iframe && (!iframe.src || iframe.src.startsWith('about:blank')))
       iframe.src = await getChatSrcWithWait(videoId);
   } else {
-    await waitForElement('ytd-live-chat-frame iframe#chatframe');
+    await waitForElementToAppear('ytd-live-chat-frame iframe#chatframe');
     const iframe = document.querySelector('ytd-live-chat-frame iframe#chatframe');
     if (iframe && iframe.src !== getLiveChatSrc(videoId)) {
       iframe.src = getLiveChatSrc(videoId);
@@ -115,24 +81,6 @@ function waitForElements(callback) {
 }
 
 /**
- * 任意の DOM 要素が現れるまでポーリング
- */
-function waitForElement(selector, timeout = 5000) {
-  return new Promise((resolve, reject) => {
-    const interval = 100;
-    let elapsed = 0;
-    const check = () => {
-      const el = document.querySelector(selector);
-      if (el) return resolve(el);
-      elapsed += interval;
-      if (elapsed >= timeout) return reject(`Timeout: ${selector}`);
-      setTimeout(check, interval);
-    };
-    check();
-  }).catch(console.warn);
-}
-
-/**
  * ストレージ設定が変更された場合にレイアウトを切り替える
  */
 chrome.storage.onChanged.addListener((changes) => {
@@ -149,52 +97,15 @@ chrome.storage.onChanged.addListener((changes) => {
 });
 
 /**
- * DOM変化に応じて video サイズを自動再調整
+ * プレイヤーが現れたタイミングでフルサイズレイアウトを強制適用
  */
-function observeLayoutChanges() {
-  const observer = new MutationObserver(() => fixVideoSize());
+function setupPlayerObserver() {
+  const observer = new MutationObserver(() => {
+    if (document.querySelector('#player') && document.querySelector('#secondary')) {
+      forceFullSizeLayout();
+    }
+  });
   observer.observe(document.body, { childList: true, subtree: true });
+
+  window.addEventListener('load', forceFullSizeLayout);
 }
-
-function forceFullSizeLayout() {
-
-  syncStoryboardSize();
-}
-
-function syncStoryboardSize() {
-  const player = document.querySelector('div.style-scope.ytd-player');
-  const preview = document.querySelector('.ytp-storyboard-framepreview');
-  const previewImg = document.querySelector('.ytp-storyboard-framepreview-img');
-  if (!player || !preview || !previewImg) return;
-
-  const playerWidth = player.clientWidth;
-  const playerHeight = player.clientHeight;
-
-  // preview はプレイヤーサイズにする
-  preview.style.width = `${playerWidth}px`;
-  preview.style.height = `${playerHeight}px`;
-
-  // previewImg は元の1コマサイズのまま
-  const originalWidth = previewImg.clientWidth;
-  const originalHeight = previewImg.clientHeight;
-
-  // 拡大率計算
-  const scaleX = playerWidth / originalWidth;
-  const scaleY = playerHeight / originalHeight;
-
-  // transform で拡大縮小。background-position はそのまま
-  previewImg.style.width = `${originalWidth}px`;
-  previewImg.style.height = `${originalHeight}px`;
-  previewImg.style.transformOrigin = 'top left';
-  previewImg.style.transform = `scale(${scaleX}, ${scaleY})`;
-}
-
-// ページ内にプレイヤーが現れたときに実行
-const observer = new MutationObserver(() => {
-  if (document.querySelector('#player') && document.querySelector('#secondary')) {
-    forceFullSizeLayout();
-  }
-});
-observer.observe(document.body, { childList: true, subtree: true });
-
-window.addEventListener('load', forceFullSizeLayout);
