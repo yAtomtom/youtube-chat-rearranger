@@ -19,7 +19,7 @@ YouTubeのライブ・アーカイブ動画においてデフォルト表示の�
 ```
 .
 ├── src/
-│ ├── content.js # メインスクリプト
+│ ├── content.js # エントリーポイント（初期化処理／イベント管理）
 │ ├── layout.js # レイアウト制御（DOM再配置）
 │ ├── videoAdjustments.js # プレイヤー・再生バー調整
 │ ├── chatHandler.js # チャット欄の表示・埋め込み制御
@@ -58,6 +58,11 @@ npm run build
 1. chrome://extensions/ にアクセス
 2. 「デベロッパーモード」を ON
 3. 「パッケージ化されていない拡張機能を読み込む」からプロジェクトフォルダを選択
+
+## 更新履歴
+> 📦 現在の最新バージョン: **v1.1**
+
+詳しい更新内容は [CHANGELOG.md](./CHANGELOG.md) を参照してください。
 
 ## ライセンス
 This project is licensed under the [MIT License](./LICENSE).
