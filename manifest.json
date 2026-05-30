@@ -12,6 +12,7 @@
     {
       "matches": ["*://www.youtube.com/watch*"],
       "js": ["content.bundle.js"],
+      "css": ["styles/layout.css"],
       "run_at": "document_end"
     }
   ]

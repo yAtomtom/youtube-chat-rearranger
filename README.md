@@ -5,7 +5,7 @@ YouTubeのライブ・アーカイブ動画においてデフォルト表示の�
 自分の場合はチャット欄は別拡張機能で見るため，複窓にする際にチャット欄によって動画サイズが小さくなるしまうのを防ぐために個人用に開発しました．
 
 > 🛠 本拡張機能は 2026年5月30日現在の YouTube UI で動作確認しています。
-> 以降の UI 変更に伴う動作保証やメンテナンスは予定されていません。
+> 個人用途のため、以降の UI 変更への追従は最小限の対応にとどまる可能性があります。
 
 ## 機能概要
 
@@ -18,18 +18,24 @@ YouTubeのライブ・アーカイブ動画においてデフォルト表示の�
 ```
 .
 ├── src/
-│ ├── content.js # エントリーポイント（初期化処理／イベント管理）
-│ ├── layout.js # レイアウト制御（DOM再配置）
-│ ├── videoAdjustments.js # プレイヤー・再生バー調整
-│ ├── chatHandler.js # チャット欄の表示・埋め込み制御
-│ ├── utils.js # 共通ユーティリティ関数
-│ └── streamStatus.js # アーカイブ/ライブの判定
-├── content.bundle.js # ビルド出力（manifestに記載）
-├── popup.html # UI (ON/OFF トグル)
-├── popup.js # ストレージとUI連携
-├── manifest.json # Chrome 拡張の定義ファイル
+│ ├── content.js          # エントリーポイント（初期化／ライフサイクル管理）
+│ ├── layout.js           # CSS Grid 用クラスの付与/解除
+│ ├── videoAdjustments.js # プレイヤー・再生バー・storyboard 調整
+│ ├── utils.js            # DOM 待機・SPA 遷移検知
+│ └── streamStatus.js     # アーカイブ/ライブの判定
+├── styles/
+│ └── layout.css          # #columns の Grid レイアウト定義（manifest 経由でロード）
+├── content.bundle.js      # ビルド出力（manifest に記載）
+├── popup.html             # UI (ON/OFF トグル)
+├── popup.js               # ストレージと UI 連携
+├── manifest.json          # Chrome 拡張の定義ファイル
 └── README.md
 ```
+
+## 実装メモ
+- レイアウトは `#columns` に `.ytcr-active` クラスを付与し、`layout.css` の CSS Grid（`display: contents` を含む）で実現。DOM を再配置しないため YouTube 側の "Something went wrong" 表示を避けられる。
+- SPA 遷移は `yt-navigate-finish` イベントで検知し、`AbortController` で MutationObserver / event listener をまとめて破棄→再構築する。
+- `#columns` 配下の MutationObserver は `requestAnimationFrame` でデバウンスしている。
 
 ## ビルド手順
 

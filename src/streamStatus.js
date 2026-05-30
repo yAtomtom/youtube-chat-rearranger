@@ -1,52 +1,61 @@
 // src/streamStatus.js
 
+const REPLAY_BUTTON_LABELS = [
+  'チャットのリプレイを表示',
+  'show chat replay',
+];
+
+const CHAT_DISABLED_MESSAGES = [
+  'このライブ ストリームではチャットは無効です。',
+  'Chat is disabled for this live stream',
+];
+
+function textMatchesAny(text, candidates) {
+  if (!text) return false;
+  const lower = text.toLowerCase();
+  return candidates.some(
+    (c) => text.includes(c) || lower.includes(c.toLowerCase())
+  );
+}
+
 /**
- * 配信がアーカイブ（ライブ配信終了）かどうかを判定する関数
- * YouTubeのチャット欄の表示やボタン、URLパラメータをチェックして判定する
- * 
- * @returns {boolean} trueならアーカイブ（ライブ終了）、falseならライブ中
+ * 配信がアーカイブ（ライブ終了済み）かどうかを判定する。
+ * 優先度:
+ *   1. 「チャットのリプレイを表示」ボタンが表示中ならアーカイブ
+ *   2. ライブバッジが存在すればライブ
+ *   3. 「チャット無効」メッセージが存在すればアーカイブ
+ *   4. URL に live=1 があればライブ
+ *   5. それ以外はアーカイブ扱い（保守的フォールバック）
+ *
+ * @returns {boolean}
  */
 function isArchiveStream() {
   const replayBtn = document.querySelector('#show-hide-button button');
+  const liveBadge = document.querySelector(
+    'button.ytp-live-badge.ytp-live-badge-is-livehead'
+  );
 
-  // ライブバッジ（ライブ中を示す）の存在チェック
-  const liveBadge = document.querySelector('button.ytp-live-badge.ytp-live-badge-is-livehead');
-
-  // チャット無効メッセージの存在チェック
-  const chatDisabledMsgExists = [...document.querySelectorAll('ytd-live-chat-frame, ytd-live-chat-text-message-renderer')]
-    .some(el => el.textContent.includes('このライブ ストリームではチャットは無効です。'));
-
-  const url = new URL(window.location.href);
-
-  // リプレイ表示ボタンがあればアーカイブと判定
-  if (replayBtn) {
-    const style = getComputedStyle(replayBtn);
-    if (style.display !== 'none' && !replayBtn.hasAttribute('hidden')) {
-      const text = replayBtn.textContent || '';
-      if (text.includes('チャットのリプレイを表示')) {
-        // console.log('チャットリプレイ表示ボタンを検出 → 配信済み（アーカイブ）');
-        return true;
-      }
-    }
-  }
-
-  if (liveBadge) {
-    // console.log('ライブバッジを検出 → ライブ配信中');
-    return false;
-  }
-
-  if (chatDisabledMsgExists) {
-    // console.log('チャット無効メッセージを検出 → 配信済みかチャットなし');
+  if (
+    replayBtn &&
+    replayBtn.offsetParent !== null &&
+    !replayBtn.hasAttribute('hidden') &&
+    textMatchesAny(replayBtn.textContent, REPLAY_BUTTON_LABELS)
+  ) {
     return true;
   }
 
-  if (url.searchParams.get('live') === '1') {
-    // console.log('URL パラメータに live=1 → ライブ配信中');
-    return false;
-  }
+  if (liveBadge) return false;
 
-  // console.log('判定できず → 配信済みまたはライブではない');
+  const chatDisabled = [
+    ...document.querySelectorAll(
+      'ytd-live-chat-frame, ytd-live-chat-text-message-renderer'
+    ),
+  ].some((el) => textMatchesAny(el.textContent, CHAT_DISABLED_MESSAGES));
+  if (chatDisabled) return true;
+
+  if (new URL(location.href).searchParams.get('live') === '1') return false;
+
   return true;
 }
 
-export { isArchiveStream }
+export { isArchiveStream };

@@ -1,14 +1,20 @@
 // popup.js
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const toggle = document.getElementById('toggle');
 
-  // 初期状態を読み込み
-  chrome.storage.local.get('enabled', (data) => {
-    toggle.checked = data.enabled ?? true; // 初期値は true
-  });
+  try {
+    const data = await chrome.storage.local.get('enabled');
+    toggle.checked = data.enabled ?? true;
+  } catch (e) {
+    console.warn('[YTChatRearranger] storage.get failed:', e);
+    toggle.checked = true; // 失敗時はデフォルト ON
+  }
 
-  // 切り替え時に保存
-  toggle.addEventListener('change', () => {
-    chrome.storage.local.set({ enabled: toggle.checked });
+  toggle.addEventListener('change', async () => {
+    try {
+      await chrome.storage.local.set({ enabled: toggle.checked });
+    } catch (e) {
+      console.warn('[YTChatRearranger] storage.set failed:', e);
+    }
   });
 });
