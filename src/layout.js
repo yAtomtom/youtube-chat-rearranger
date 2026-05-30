@@ -1,76 +1,51 @@
 // layout.js
 
-/**
- * YouTubeのプレイヤー下に #below と #secondary を横並びで配置するカスタムレイアウトを適用する
- */
-function applyCustomLayout() {
-  const player = document.getElementById('player');
-  const below = document.getElementById('below');
-  const secondary = document.getElementById('secondary');
+const STYLE_ID = 'ytcr-style';
+const ACTIVE_CLASS = 'ytcr-active';
+const GRID_CSS = `
+#columns.${ACTIVE_CLASS} {
+  display: grid !important;
+  grid-template-columns: 2fr 1fr;
+  grid-template-areas: "player player" "below secondary";
+  gap: 16px;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding-left: 24px !important;
+  padding-right: 24px !important;
+  box-sizing: border-box !important;
+}
+#columns.${ACTIVE_CLASS} > #primary,
+#columns.${ACTIVE_CLASS} #primary-inner { display: contents !important; }
+#columns.${ACTIVE_CLASS} #player    { grid-area: player; width: 100% !important; max-width: 100% !important; }
+#columns.${ACTIVE_CLASS} #below     { grid-area: below; min-width: 0; width: auto !important; }
+#columns.${ACTIVE_CLASS} > #secondary { grid-area: secondary; min-width: 0; width: auto !important; margin-left: 0 !important; }
+`;
 
-  if (!player || !below || !secondary) return;
-  if (document.getElementById('layout-below')) return;
-
-  // プレイヤー横幅調整
-  player.style.width = '100%';
-  player.style.maxWidth = '100%';
-
-  // 新しいレイアウト用ラッパー
-  const layout = document.createElement('div');
-  layout.id = 'layout-below';
-  layout.style.display = 'flex';
-  layout.style.flexDirection = 'row';
-  layout.style.width = '100%';
-  layout.style.gap = '16px';
-
-  // layout に below, secondary を移動
-  layout.appendChild(below);
-  layout.appendChild(secondary);
-
-  // layout を player の直後に挿入
-  const parent = player.parentNode;
-  if (player.nextSibling) {
-    parent.insertBefore(layout, player.nextSibling);
-  } else {
-    parent.appendChild(layout);
-  }
-
-  // 比率調整
-  below.style.flex = '2';
-  secondary.style.flex = '1';
+function ensureStyleInjected() {
+  if (document.getElementById(STYLE_ID)) return;
+  const style = document.createElement('style');
+  style.id = STYLE_ID;
+  style.textContent = GRID_CSS;
+  document.head.appendChild(style);
 }
 
 /**
- * 元の縦並びレイアウトに戻す
+ * #columns を CSS Grid 化して player をフル幅・below と secondary を横並びにする。
+ * DOM は一切移動させず、クラス付与だけで切り替える。
+ */
+function applyCustomLayout() {
+  const columns = document.getElementById('columns');
+  if (!columns) return;
+  ensureStyleInjected();
+  columns.classList.add(ACTIVE_CLASS);
+}
+
+/**
+ * クラスを外すだけで元のレイアウトに戻る。
  */
 function revertLayout() {
-  const layout = document.getElementById('layout-below');
-  const player = document.getElementById('player');
-  const below = document.getElementById('below');
-  const secondary = document.getElementById('secondary');
   const columns = document.getElementById('columns');
-
-  if (!player || !below || !secondary || !columns) return;
-
-  // layout ラッパー削除
-  if (layout) layout.remove();
-
-  const parent = player.parentNode;
-  if (parent && player.nextSibling !== below) {
-    parent.insertBefore(below, player.nextSibling);
-  }
-
-  columns.appendChild(secondary);
-
-  // スタイルを初期状態に戻す
-  [player, below, secondary].forEach(el => {
-    if (el instanceof HTMLElement) {
-      el.style.width = '';
-      el.style.maxWidth = '';
-      el.style.flex = '';
-      el.style.display = '';
-    }
-  });
+  if (columns) columns.classList.remove(ACTIVE_CLASS);
 }
 
 export { applyCustomLayout, revertLayout };

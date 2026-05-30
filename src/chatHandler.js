@@ -52,7 +52,7 @@ async function getChatSrcWithWait(videoId) {
     const playerOffsetMs = ytData?.videoDetails?.playerOffsetMs || 0;
 
     if (continuation) {
-      return `https://www.youtube.com/live_chat_replay?continuation=${encodeURIComponent(continuation)}&dark_theme=true&authuser=0&playerOffsetMs=${playerOffsetMs}`;
+      return `https://www.youtube.com/live_chat_replay?continuation=${encodeContinuation(continuation)}&dark_theme=true&authuser=0&playerOffsetMs=${playerOffsetMs}`;
     }
 
     // continuation が取れなければ fallback
@@ -82,6 +82,19 @@ async function extractYtInitialDataFromScripts() {
     }
   }
   throw new Error('[YTChatRearranger] ytInitialData not found in scripts');
+}
+
+/**
+ * continuation 値を URL クエリ用に正規化する。
+ * ytInitialData 内の値が既に URL エンコード済み (例: 末尾 `%3D%3D`) で来るケースがあるため、
+ * 一度デコードしてから encodeURIComponent し直すことで二重エンコードを防ぐ。
+ */
+function encodeContinuation(token) {
+  try {
+    return encodeURIComponent(decodeURIComponent(token));
+  } catch {
+    return encodeURIComponent(token);
+  }
 }
 
 /**
