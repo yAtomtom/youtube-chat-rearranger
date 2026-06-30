@@ -1,6 +1,6 @@
 {
   "name": "YouTube Chat Rearranger",
-  "version": "1.2",
+  "version": "1.3",
   "manifest_version": 3,
   "description": "ライブ・アーカイブでYouTubeチャット欄をbelow(説明欄，コメント欄)と横並びにします",
   "permissions": ["storage"],

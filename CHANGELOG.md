@@ -3,6 +3,12 @@
 
 このプロジェクトでは [Semantic Versioning](https://semver.org/lang/ja/) に従っています。
 
+## [1.3] - 2026-07-01
+### Fixed
+- YouTube の split-scroll 機能導入に伴い、拡張適用時にチャット欄が動画の上に被る不具合を修正
+  - レイアウト変更で split-scroll が有効化され `#secondary-inner` が固定配置でピン留めされるのが原因
+  - `#columns.ytcr-active` スコープ内の CSS で `#secondary-inner` の固定配置を解除し、トリガーとなる `#secondary-split-scroll-spacer` を無効化（DOM 再配置はせず CSS のみで対応）
+
 ## [1.2] - 2026-05-30
 ### Fixed
 - YouTube アップデートに伴いチャット欄に "Something went wrong" が表示される不具合を修正

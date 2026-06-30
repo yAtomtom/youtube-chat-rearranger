@@ -37,3 +37,23 @@
   width: auto !important;
   margin-left: 0 !important;
 }
+
+/*
+ * YouTube の split-scroll 機能対策。
+ * レイアウト変更で split-scroll が有効化されると spacer の hidden が外れ、
+ * YouTube が secondary 配下（特にチャット枠）を固定配置でピン留めし、
+ * チャットが画面中央に居座って動画に被る。
+ * secondary 系とチャット枠の固定配置を解除し、トリガーの spacer も無効化する。
+ */
+#columns.ytcr-active > #secondary,
+#columns.ytcr-active #secondary-inner,
+#columns.ytcr-active #chat-container,
+#columns.ytcr-active #chat {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+}
+
+#columns.ytcr-active #secondary-split-scroll-spacer {
+  display: none !important;
+}
